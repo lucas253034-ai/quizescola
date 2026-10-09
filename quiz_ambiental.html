@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b32">
+<title>Quiz Ambiental — Resíduos e Saneamento</title>
+<style>
+:root{--green:#176b52;--dark:#123b32;--mint:#e8f5ee;--bg:#f4f7f5;--text:#1d2925;--muted:#63716b;--line:#dce6e0;--white:#fff;--red:#b93838;--gold:#8b6515}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+header{background:linear-gradient(135deg,var(--dark),var(--green));color:white;padding:30px 18px 26px}
+.hero{max-width:850px;margin:auto}.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.85;font-weight:700}
+h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.12;margin:.45rem 0 .7rem}.hero p{max-width:650px;margin:0;color:#e3f4eb}
+main{max-width:850px;margin:22px auto;padding:0 14px 40px}.progress-wrap{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.9rem;margin-bottom:8px}
+progress{width:100%;height:9px;accent-color:var(--green);margin-bottom:18px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,28px);box-shadow:0 5px 22px #183e2b0a}
+.topic{display:inline-block;background:var(--mint);color:var(--green);font-weight:700;border-radius:999px;padding:5px 10px;font-size:.78rem;margin-bottom:12px}
+h2{font-size:1.28rem;line-height:1.35;margin:0 0 18px}
+.options{display:grid;gap:10px}
+.option{display:flex;align-items:flex-start;gap:11px;text-align:left;background:white;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;color:var(--text);cursor:pointer;transition:.15s}
+.option:hover{border-color:var(--green);background:#f8fcf9}.option .letter{flex:0 0 29px;height:29px;display:grid;place-items:center;border-radius:8px;background:#eef2ef;font-weight:800;font-size:.85rem}
+.option.selected{border-color:var(--green);background:var(--mint)}.option.selected .letter{background:var(--green);color:white}
+.option:disabled{cursor:default}.option.correct{border-color:#278452;background:#effaf3}.option.wrong{border-color:var(--red);background:#fff4f4}
+.feedback{margin-top:14px;border-radius:12px;padding:13px 14px;background:#f1f4f2;color:var(--text);font-size:.95rem}
+.feedback.good{background:#eaf7ef;border:1px solid #b8e1c5}.feedback.bad{background:#fff0f0;border:1px solid #f0c6c6}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+button.primary,button.secondary{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-weight:750;cursor:pointer}
+button.primary{background:var(--green);color:white}button.primary:hover{background:var(--dark)}button.secondary{background:#edf1ee;color:var(--text)}button:disabled{opacity:.45;cursor:not-allowed}
+.note{color:var(--muted);font-size:.9rem;margin:14px 2px 0}.hidden{display:none!important}
+.result{text-align:center}.score-circle{width:126px;height:126px;margin:18px auto;display:grid;place-items:center;border-radius:50%;border:8px solid var(--mint);background:white;color:var(--green);font-size:1.7rem;font-weight:850}
+.result h2{font-size:1.7rem}.result p{color:var(--muted)}.review{margin-top:22px;text-align:left;display:grid;gap:12px}.review-item{padding:14px;border:1px solid var(--line);border-radius:12px}.review-item strong{display:block;margin-bottom:5px}.review-item p{margin:4px 0;font-size:.92rem}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:0 15px 25px}
+@media(min-width:650px){.options{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div class="eyebrow">Aprenda • Responda • Confira</div><h1>Quiz Ambiental</h1><p>Gestão de resíduos, aterros sanitários, Baía de Guanabara, microplásticos, logística reversa, saúde e saneamento básico.</p></div></header>
+<main>
+  <div id="quiz">
+    <div class="progress-wrap"><span id="questionCount">Questão 1 de 10</span><span id="answeredCount">0 respondidas</span></div>
+    <progress id="progress" value="0" max="10" aria-label="Progresso do quiz"></progress>
+    <section class="card" aria-live="polite">
+      <span class="topic" id="topic">Gestão de resíduos</span>
+      <h2 id="question"></h2>
+      <div class="options" id="options"></div>
+      <div id="feedback" class="feedback hidden" role="status"></div>
+      <div class="actions"><button class="secondary" id="prevBtn">← Anterior</button><button class="primary" id="nextBtn" disabled>Responder</button></div>
+    </section>
+    <p class="note">Escolha uma alternativa e toque em “Responder” para conferir a explicação. Sua pontuação aparece no final.</p>
+  </div>
+  <section id="result" class="card result hidden" aria-live="polite">
+    <span class="topic">Resultado final</span><h2 id="resultTitle">Quiz concluído!</h2>
+    <div class="score-circle" id="scoreCircle">0/10</div>
+    <p id="resultMessage"></p>
+    <button class="primary" id="restartBtn">Refazer quiz</button>
+    <div class="review" id="review"></div>
+  </section>
+</main>
+<footer>Quiz educativo • Meio ambiente e saúde pública</footer>
+<script>
+const questions = [
+ {topic:"Gestão de resíduos",q:"Qual é o principal objetivo da gestão adequada de resíduos sólidos?",options:["Reduzir impactos ambientais e riscos à saúde","Aumentar a quantidade de lixo produzido","Eliminar a coleta seletiva","Descartar resíduos em rios"],answer:0,explain:"A gestão adequada busca prevenir a poluição, proteger a saúde pública e garantir a destinação correta dos resíduos."},
+ {topic:"Aterro sanitário",q:"Qual característica ajuda a evitar a contaminação do solo e da água em um aterro sanitário?",options:["Deixar o lixo exposto à chuva","Impermeabilizar a base e controlar o chorume","Queimar o lixo a céu aberto","Despejar resíduos em cursos d’água"],answer:1,explain:"Aterros sanitários usam sistemas de engenharia, como impermeabilização e coleta do chorume, além do controle de gases."},
+ {topic:"Baía de Guanabara",q:"Um dos problemas ambientais históricos da Baía de Guanabara é:",options:["Excesso de neve e geleiras","A ausência de cidades no entorno","O lançamento de esgoto e resíduos sem tratamento adequado","A falta completa de água salgada"],answer:2,explain:"A urbanização intensa e o tratamento insuficiente de esgoto e resíduos contribuem para a poluição da baía."},
+ {topic:"Microplásticos",q:"Microplásticos são geralmente definidos como partículas de plástico:",options:["Menores que 5 milímetros","Maiores que 1 metro","Feitas exclusivamente de metal","Que são sempre organismos vivos"],answer:0,explain:"Microplásticos são partículas plásticas geralmente menores que 5 mm. Podem se formar pela fragmentação de objetos ou ser produzidos em tamanhos pequenos."},
+ {topic:"Logística reversa",q:"Qual situação é um exemplo de logística reversa?",options:["Jogar pilhas no lixo comum","Abandonar pneus em terrenos baldios","Queimar embalagens no quintal","Devolver pilhas usadas a um ponto de coleta apropriado"],answer:3,explain:"A logística reversa organiza o retorno de produtos e embalagens após o uso para reaproveitamento ou destinação ambientalmente adequada."},
+ {topic:"Saneamento básico",q:"Qual alternativa reúne serviços que fazem parte do saneamento básico no Brasil?",options:["Somente a construção de estradas","Abastecimento de água, esgotamento sanitário, limpeza urbana e drenagem de águas pluviais","Apenas a coleta de água mineral","Somente a fiscalização de parques"],answer:1,explain:"O saneamento básico abrange abastecimento de água potável, esgotamento sanitário, limpeza urbana e manejo de resíduos sólidos, além da drenagem e manejo das águas pluviais."},
+ {topic:"Saúde pública",q:"Como o lixo acumulado em locais inadequados pode afetar a saúde?",options:["Impede a reprodução de todos os insetos","Torna a água automaticamente potável","Pode favorecer vetores, como mosquitos e ratos","Elimina todos os microrganismos nocivos"],answer:2,explain:"Resíduos acumulados podem oferecer abrigo e condições favoráveis a vetores de doenças, além de atrair animais e contaminar o ambiente."},
+ {topic:"Microplásticos",q:"Qual é um possível impacto dos microplásticos em ambientes aquáticos?",options:["Serem ingeridos por organismos aquáticos","Transformarem toda água em água potável","Eliminarem a poluição química","Impedirem qualquer alteração ecológica"],answer:0,explain:"Peixes e outros organismos aquáticos podem ingerir microplásticos, que podem entrar nas cadeias alimentares."},
+ {topic:"Aterro sanitário",q:"Verdadeiro ou falso: aterro sanitário e lixão a céu aberto oferecem o mesmo nível de controle ambiental.",options:["Verdadeiro","Falso"],answer:1,explain:"Falso. Um aterro sanitário projetado e operado corretamente tem sistemas de controle ambiental; um lixão não oferece proteção equivalente."},
+ {topic:"Coleta seletiva",q:"Qual é a principal finalidade da coleta seletiva?",options:["Misturar todos os materiais recolhidos","Aumentar o envio de resíduos aos lixões","Substituir todos os serviços de saneamento","Separar materiais para facilitar a reciclagem e a destinação adequada"],answer:3,explain:"A separação facilita a triagem e a reciclagem de materiais como papel, vidro, plástico e metal."}
+];
+let current=0, answers=Array(questions.length).fill(null), checked=Array(questions.length).fill(false);
+const $=id=>document.getElementById(id);
+function render(){
+ const item=questions[current]; $("questionCount").textContent=`Questão ${current+1} de ${questions.length}`;
+ $("answeredCount").textContent=`${answers.filter(a=>a!==null).length} respondidas`;
+ $("progress").value=answers.filter(a=>a!==null).length;
+ $("topic").textContent=item.topic;$("question").textContent=item.q;
+ $("options").innerHTML="";
+ item.options.forEach((opt,i)=>{
+  const b=document.createElement("button");b.className="option";b.type="button";
+  if(answers[current]===i)b.classList.add("selected");
+  if(checked[current]){b.disabled=true;if(i===item.answer)b.classList.add("correct");else if(answers[current]===i)b.classList.add("wrong");}
+  const letter=document.createElement("span");letter.className="letter";letter.textContent=String.fromCharCode(65+i);
+  const txt=document.createElement("span");txt.textContent=opt;b.append(letter,txt);
+  b.addEventListener("click",()=>{if(checked[current])return;answers[current]=i;render();});$("options").appendChild(b);
+ });
+ const fb=$("feedback");fb.className="feedback hidden";fb.textContent="";
+ if(checked[current]){fb.className="feedback "+(answers[current]===item.answer?"good":"bad");fb.textContent=(answers[current]===item.answer?"Você acertou! ":"Não foi dessa vez. ")+item.explain;}
+ $("prevBtn").disabled=current===0;$("nextBtn").disabled=answers[current]===null&&!checked[current];
+ $("nextBtn").textContent=checked[current]?(current===questions.length-1?"Ver resultado":"Próxima →"):"Responder";
+}
+$("prevBtn").addEventListener("click",()=>{if(current>0){current--;render();}});
+$("nextBtn").addEventListener("click",()=>{
+ if(!checked[current]){checked[current]=true;render();return;}
+ if(current<questions.length-1){current++;render();}else showResult();
+});
+function showResult(){
+ $("quiz").classList.add("hidden");$("result").classList.remove("hidden");
+ const score=answers.reduce((n,a,i)=>n+(a===questions[i].answer?1:0),0);
+ $("scoreCircle").textContent=`${score}/${questions.length}`;
+ $("resultTitle").textContent=score===questions.length?"Excelente!":score>=7?"Muito bem!":score>=5?"Bom esforço!":"Continue estudando!";
+ $("resultMessage").textContent=`Você acertou ${score} de ${questions.length} questões (${Math.round(score/questions.length*100)}%). Confira a revisão abaixo.`;
+ $("review").innerHTML="";
+ questions.forEach((q,i)=>{
+  const box=document.createElement("div");box.className="review-item";
+  const title=document.createElement("strong");title.textContent=`${i+1}. ${q.q}`;
+  const your=document.createElement("p");your.textContent="Sua resposta: "+(answers[i]===null?"Não respondida":q.options[answers[i]]);
+  const correct=document.createElement("p");correct.textContent="Resposta correta: "+q.options[q.answer];
+  const exp=document.createElement("p");exp.textContent=q.explain;
+  box.append(title,your,correct,exp);$("review").appendChild(box);
+ });
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+$("restartBtn").addEventListener("click",()=>{current=0;answers=Array(questions.length).fill(null);checked=Array(questions.length).fill(false);$("result").classList.add("hidden");$("quiz").classList.remove("hidden");render();window.scrollTo({top:0,behavior:"smooth"});});
+render();
+</script>
+</body>
+</html>
